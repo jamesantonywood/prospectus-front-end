@@ -1,5 +1,8 @@
 const gulp = require('gulp');
 const concat = require('gulp-concat');
+const sass = require('gulp-sass')(require('sass'));
+const sourcemaps = require('gulp-sourcemaps');
+const cleanCSS = require('gulp-clean-css');
 const webpack = require('webpack-stream');
 const browserSync = require('browser-sync').create();
 
@@ -19,6 +22,20 @@ gulp.task('css', () => {
         .pipe(gulp.dest('dist/css'))
         .pipe(browserSync.stream());
 });
+
+gulp.task('sass', () => {
+	return gulp
+		.src('src/sass/styles.scss')
+		.pipe(sourcemaps.init())
+		.pipe(sass())
+		.pipe(
+			cleanCSS({
+				compatibility: 'ie8',
+			}),
+		)
+		.pipe(sourcemaps.write())
+		.pipe(gulp.dest('./dist/css'))
+})
 
 gulp.task('img', () => {
     return gulp.src('src/img/*')
@@ -54,10 +71,10 @@ gulp.task('watch', () => {
     });
 
     gulp.watch('src/*.html', gulp.series('html')).on('change', browserSync.reload);
-    gulp.watch('src/css/*.css', gulp.series('css'))
-    gulp.watch('src/js/*.js', gulp.series('js'));
-    gulp.watch('src/data/*.json', gulp.series('data')).on('change', browserSync.reload);;
+    gulp.watch('src/sass/**/*.scss', gulp.series('sass')).on('change', browserSync.reload);
+    gulp.watch('src/js/*.js', gulp.series('js')).on('change', browserSync.reload);
+    gulp.watch('src/data/*.json', gulp.series('data')).on('change', browserSync.reload);
 
 });
 
-gulp.task('default', gulp.series('html', 'fonts', 'css', 'img', 'data', 'js', 'watch'));
+gulp.task('default', gulp.series('html', 'fonts', 'sass', 'img', 'data', 'js', 'watch'));
